@@ -8,25 +8,26 @@ d3.json(queryUrl).then(function(data) {
   });
 
   function markerColor(depth) {
-    switch (true){
+    switch (true) {
      case depth > 90:
-       return "ff0000";
-     case depth >70: 
-       return "FF6600";
-     case depth < 50:
-       return "FF9900";
-     case depth < 30:
-       return "FFCC00";
-     case depth < 10:
-       return "99CC00";
+       return "#ea2c2c";
+     case depth > 70: 
+       return "##ea822c";
+     case depth > 50:
+       return "#ee9c00";
+     case depth > 30:
+       return "#eecc00";
+     case depth > 10:
+       return "#99CC00";
      default:
-       return "00ff00";
+       return "#008000";
      }
    }
 
    function markerSize(magnitude) {
      return magnitude *5;
    }
+
 
   function createFeatures(earthquakeData) {
     
@@ -44,34 +45,22 @@ d3.json(queryUrl).then(function(data) {
     var earthquakes = L.geoJSON(earthquakeData, {
       onEachFeature: onEachFeature,
       pointToLayer: function(feature,latlng) {
-          return L.circleMarker(latlng, {
-            color: 
-            fillColor: markerColor(feature.geometry.coordinates[2]),
-            fillOpacity: 0.75,
-            stroke: false,
-            radius: markerSize(feature.properties.mag)
-          });
-      }  
-    });
+        return L.circleMarker(latlng, {
+          opacity: 1.5,
+          fillOppacity: 1.25,
+          color: markerColor(feature.geometry.coordinates[2]),
+          radius: markerSize(feature.properties.mag),
+          stroke: true,
+          weight: 1
+        });
+      }
     
+    });
     createMap(earthquakes);
   }
 
-
     // Sending our earthquakes layer to the createMap function
   function createMap(earthquakes) {
-
-    // Add circles to map
-// for (var i = 0; i < geometry.coordinates[2].length; i++) {
-//     L.circleMarker(earthquakes, {
-//     fillOpacity: 0.75,
-//     // color: "white",
-//     fillColor: markerColor,
-//     // Adjust radius
-//     // radius: countries[i].points / 7.5
-//     })
-//   }
-
    // Define streetmap layer
     var streetmap = L.tileLayer("https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}", {
       attribution: "© <a href='https://www.mapbox.com/about/maps/'>Mapbox</a> © <a href='http://www.openstreetmap.org/copyright'>OpenStreetMap</a> <strong><a href='https://www.mapbox.com/map-feedback/' target='_blank'>Improve this map</a></strong>",
@@ -116,4 +105,35 @@ d3.json(queryUrl).then(function(data) {
       collapsed: false
     }).addTo(myMap);
 
+
+      var legend = L.control({
+    position: "bottomright"
+  });
+
+  legend.onAdd = function() {
+    var div = L.DomUtil.create("div", "info legend");
+
+    var depths = [-10, 10, 30, 50, 70, 90];
+    var colors = [
+      "#ff0000",
+      "#FF6600",
+      "#FF9900",
+      "#FFCC00",
+      "#99CC00",
+      "#008000"];
+
+
+    // Loop through our intervals and generate a label with a colored square for each interval.
+    for (var i = 0; i < depths.length; i++) {
+      div.innerHTML += "<i style='background: "
+        + colors[i]
+        + "'></i> "
+        + depths[i]
+        + (depths[i + 1] ? "&ndash;" + depths[i + 1] + "<br>" : "+");
+    }
+    return div;
   };
+  
+  legend.addTo(myMap);
+  };
+
